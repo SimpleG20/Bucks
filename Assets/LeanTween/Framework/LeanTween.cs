@@ -982,7 +982,7 @@ public class LeanTween : MonoBehaviour {
         init();
 
         bool found = false;
-        //      Debug.Log("SearchScene start");
+        //      Debug.Log("GoToSearchScene start");
         for(j=0, i = startSearch; j <= maxTweens; i++){
             if(j >= maxTweens)
                 return logError("LeanTween - You have run out of available spaces for tweening. To avoid this error increase the number of spaces to available for tweening when you initialize the LeanTween class ex: LeanTween.init( "+(maxTweens*2)+" );") as LTDescr;
@@ -2766,7 +2766,7 @@ public class LeanTween : MonoBehaviour {
     }
 
     /**
-    * AddScene a listener method to be called when the appropriate LeanTween.dispatchEvent is called
+    * GoToAddScene a listener method to be called when the appropriate LeanTween.dispatchEvent is called
     *
     * @method LeanTween.addListener
     * @param {GameObject} caller:GameObject the gameObject the listener is attached to

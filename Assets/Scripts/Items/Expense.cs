@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class Expense : Item
 {
+    public Guid ID { get; private set; }
     [field: SerializeField] public string Name { get; private set; }
     [field: SerializeField] public float Value { get; private set; }
     [field: SerializeField] public int AmountParceled { get; private set; }
@@ -30,6 +31,17 @@ public class Expense : Item
         Subscription = subscription;
         Credited = credited;
 
+        InitializeManually();
+    }
+
+    public void SetID(Guid id) => ID = id;
+    public void InitializeManually()
+    {
+        ID = Guid.NewGuid();
+
+        int amountParceled = AmountParceled;
+        int month = Month;
+        int year = Year;
         int yearsAmount = Mathf.CeilToInt(amountParceled / 12);
         TimeSpams = new ItemTimeSpam[yearsAmount];
 

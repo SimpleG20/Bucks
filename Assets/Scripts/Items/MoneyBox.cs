@@ -1,16 +1,15 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 [Serializable]
 public class MoneyBox : Item
 {
-    public string Name { get; private set; }
-    public float Value { get; private set; }
-    public float Percentage { get; set; }
-    public int AmountParceled { get; private set; }
+    public Guid ID { get; private set; }
+    [field: SerializeField] public string Name { get; private set; }
+    [field: SerializeField] public float Value { get; private set; }
+    [field: SerializeField] public float Percentage { get; set; }
+    [field: SerializeField] public int AmountParceled { get; private set; }
     public int Day => 1;
     public int Month => 1;
     public int Year => DateTime.Now.Year;
@@ -26,6 +25,18 @@ public class MoneyBox : Item
         Percentage = percentage;
         AmountParceled = amountMonths;
 
+        int month = DateTime.Now.Month;
+        int year = DateTime.Now.Year;
+
+        InitializeManually();
+    }
+
+    public void SetID(Guid id) => ID = id;
+    public void InitializeManually()
+    {
+        ID = Guid.NewGuid();
+
+        int amountMonths = AmountParceled;
         int month = DateTime.Now.Month;
         int year = DateTime.Now.Year;
 

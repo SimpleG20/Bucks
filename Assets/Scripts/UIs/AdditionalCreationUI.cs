@@ -1,80 +1,17 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class AdditionalCreationUI : BaseCreationUi
 {
-    [SerializeField] private TMP_InputField _nameInput;
-    [SerializeField] private TMP_InputField _priceInput;
-    [SerializeField] private TMP_InputField _dateInput;
     [SerializeField] private TMP_InputField _installmentInput;
     [SerializeField] private Toggle _showTotalPriceTg;
-
-    private bool _isMissingName = true;
-    private bool _isMissingPrice = true;
-    private bool _isMissingDate = true;
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        _dateInput.onValidateInput += delegate (string input, int charIndex, char addedChar) {
-            string newText = _dateInput.text.Remove(charIndex, 1);
-            newText = newText.Insert(charIndex, addedChar.ToString());
-            if (System.Text.RegularExpressions.Regex.IsMatch(newText, regexDatePattern))
-            {
-                return addedChar;
-            }
-            return '\0';
-        };
-    }
 
 
     protected override void InitializeInputs()
     {
-        _nameInput.onEndEdit.AddListener((value) =>
-        {
-            if (value != "")
-            {
-                NameItem = value;
-                _isMissingName = false;
-            }
-            else _isMissingName = true;
-        });
-
-        _priceInput.onEndEdit.AddListener((value) =>
-        {
-            float number = _priceInput.SetTextToFloat();
-            if (number > 0)
-            {
-                PriceItem = number;
-                _isMissingPrice = false;
-                _priceInput.text = number.ToMoney();
-            }
-            else
-            {
-                _isMissingPrice = true;
-                _priceInput.text = string.Empty;
-            }
-        });
-
-        _dateInput.onEndEdit.AddListener((value) =>
-        {
-            if (value != "")
-            {
-                var temp = value.Split("/");
-
-                int.TryParse(temp[0], out DayItem);
-                int.TryParse(temp[1], out MonthItem);
-                int.TryParse(temp[2], out YearItem);
-
-                _isMissingDate = false;
-            }
-            else _isMissingDate = true;
-        });
+        base.InitializeInputs();
 
         _installmentInput.onEndEdit.AddListener((value) =>
         {
@@ -87,7 +24,7 @@ public class AdditionalCreationUI : BaseCreationUi
             }
             else InstallmentItem = (int)number;
 
-            _priceInput.text = InstallmentItem.ToString("00");
+            _installmentInput.text = InstallmentItem.ToString("00");
         });
 
         _showTotalPriceTg.onValueChanged.AddListener((value) => ShowTotalItem = value);
@@ -97,23 +34,17 @@ public class AdditionalCreationUI : BaseCreationUi
     {
         base.ResetInputs();
 
-        _nameInput.text = NameItem;
-        _priceInput.text = PriceItem.ToMoney();
-        _dateInput.text = new DateTime(YearItem, MonthItem, DayItem).ToShortDateString();
         _installmentInput.text = InstallmentItem.ToString("00");
-
         _showTotalPriceTg.isOn = ShowTotalItem;
     }
 
-    public override void Setup<T>(T item)
+    public override void Setup(Item item)
     {
+        base.Setup(item);
+
         Additional additional = item as Additional;
 
-        _nameInput.text = additional.Name;
-        _priceInput.text = additional.Value.ToMoney();
-        _dateInput.text = new DateTime(additional.Year, additional.Month, additional.Year).ToShortDateString();
         _installmentInput.text = additional.AmountParceled.ToString("00");
-
         _showTotalPriceTg.isOn = additional.ShowTotal;
     }
 
@@ -125,22 +56,36 @@ public class AdditionalCreationUI : BaseCreationUi
             return;
         }
 
+        if (EditMode)
+        {
+            User.Instance.RemoveAdditionalByID(ID);
+        }
+
         Additional newAdditional = new Additional(NameItem, PriceItem, InstallmentItem,
             DayItem, MonthItem, YearItem, ShowTotalItem);
 
+        ID = Guid.NewGuid();
+        newAdditional.SetID(ID);
+
         User.Instance.AddItemInAdditionals(newAdditional);
-        ResetInputs();
+
+        if (!EditMode) ResetInputs();
     }
 
-    protected override bool IsMissingInformation() => _isMissingPrice || _isMissingDate || _isMissingName;
+    protected override bool IsMissingInformation()
+    {
+        if (NameItem == "") IsMissingName = true;
+        else IsMissingName = false;
+
+        if (PriceItem <= 0) IsMissingPrice = true;
+        else IsMissingPrice = false;
+
+        return IsMissingName || IsMissingPrice;
+    }
 
     protected override void LeaveScenario()
     {
-        _nameInput.onEndEdit.RemoveAllListeners();
-        _dateInput.onEndEdit.RemoveAllListeners();
-        _priceInput.onEndEdit.RemoveAllListeners();
         _installmentInput.onEndEdit.RemoveAllListeners();
-
         _showTotalPriceTg.onValueChanged.RemoveAllListeners();
 
         base.LeaveScenario();

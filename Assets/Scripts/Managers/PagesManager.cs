@@ -36,27 +36,27 @@ public class PagesManager : MonoBehaviour
         InitializePageDictionary();
     }
 
-    public void HomeScene()
+    public void GoToHomeScene()
     {
         LoadPage(Pages.Home);
     }
 
-    public void AddScene()
+    public void GoToAddScene()
     {
         LoadPage(Pages.Add);
     }
 
-    public void ReportScene()
+    public void GoToReportScene()
     {
         LoadPage(Pages.Report);
     }
 
-    public void ConfigScene()
+    public void GoToConfigScene()
     {
         LoadPage(Pages.Config);
     }
 
-    public void SearchScene()
+    public void GoToSearchScene()
     {
         LoadPage(Pages.Search);
     }

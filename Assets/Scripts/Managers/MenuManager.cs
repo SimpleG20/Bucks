@@ -35,27 +35,27 @@ public class MenuManager : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         _homeBt.onClick.AddListener(() =>
         {
-            PagesManager.Instance.HomeScene();
+            PagesManager.Instance.GoToHomeScene();
         });
 
         _addBt.onClick.AddListener(() =>
         {
-            PagesManager.Instance.AddScene();
+            PagesManager.Instance.GoToAddScene();
         });
 
         _reportBt.onClick.AddListener(() =>
         {
-            PagesManager.Instance.ReportScene();
+            PagesManager.Instance.GoToReportScene();
         });
 
         _searchBt.onClick.AddListener(() =>
         {
-            PagesManager.Instance.SearchScene();
+            PagesManager.Instance.GoToSearchScene();
         });
 
         _configBt.onClick.AddListener(() =>
         {
-            PagesManager.Instance.ConfigScene();
+            PagesManager.Instance.GoToConfigScene();
         });
     }
 

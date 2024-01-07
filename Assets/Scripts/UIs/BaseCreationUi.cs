@@ -1,20 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine.UI;
 using UnityEngine;
-using System;
+using TMPro;
 
 public abstract class BaseCreationUi : MonoBehaviour
 {
-    protected readonly string regexDatePattern = "^(0[1 - 9] | [12][0 - 9] | 3[01]) / (0[1 - 9] | 1[0 - 2]) / 202[0-9]$";
-
-
     [SerializeField] protected CanvasGroup scenario;
-    [SerializeField] protected Button _confirmBt;
-    [SerializeField] protected Button _leaveBt;
+
+    [Space(10)]
+    [SerializeField] protected TMP_InputField NameInput;
+    [SerializeField] protected TMP_InputField PriceInput;
+    [SerializeField] protected TMP_InputField DateInput;
+
+    [Space(10)]
+    [SerializeField] protected Button ConfirmBt;
+    [SerializeField] protected Button LeaveBt;
 
     [SerializeField] protected AddManager _addManager;
 
+    protected Guid ID;
     protected string NameItem;
     protected float PriceItem;
     protected int DayItem;
@@ -25,14 +29,55 @@ public abstract class BaseCreationUi : MonoBehaviour
     protected bool SubscriptionItem;
     protected bool CreditedItem;
 
+    protected bool EditMode;
+    protected bool IsMissingName = true;
+    protected bool IsMissingPrice = true;
+
+
     protected virtual void Awake()
     {
-        _confirmBt.onClick.AddListener(Confirm);
-        _leaveBt.onClick.AddListener(LeaveScenario);
+        ConfirmBt.onClick.AddListener(Confirm);
+        LeaveBt.onClick.AddListener(LeaveScenario);
     }
 
 
-    protected abstract void InitializeInputs();
+    protected virtual void InitializeInputs()
+    {
+        NameInput.onEndEdit.AddListener((value) =>
+        {
+            if (value != "") NameItem = value;
+            else NameItem = "";
+        });
+
+        PriceInput.onEndEdit.AddListener((value) =>
+        {
+            float number = PriceInput.SetTextToFloat();
+            if (number > 0)
+            {
+                PriceItem = number;
+                PriceInput.text = number.ToMoney();
+            }
+            else
+            {
+                PriceItem = 0;
+                PriceInput.text = string.Empty;
+            }
+        });
+
+        DateInput.onEndEdit.AddListener((value) =>
+        {
+            if (value.CorrectDateFormat() != "")
+            {
+                var temp = value.Split("/");
+
+                int.TryParse(temp[0], out DayItem);
+                int.TryParse(temp[1], out MonthItem);
+                int.TryParse(temp[2], out YearItem);
+            }
+            else DateInput.text = "";
+        });
+
+    }
     protected virtual void ResetInputs()
     {
         NameItem = string.Empty;
@@ -44,15 +89,44 @@ public abstract class BaseCreationUi : MonoBehaviour
         ShowTotalItem = false;
         SubscriptionItem = false;
         CreditedItem = true;
+
+        NameInput.text = NameItem;
+        PriceInput.text = PriceItem.ToMoney();
+        DateInput.text = new DateTime(YearItem, MonthItem, DayItem).ToString("dd/MM/yyyy");
+
+        IsMissingPrice = true;
+        IsMissingName = true;
     }
 
-    protected abstract void Confirm();
 
+    public void InEditMode(bool value) => EditMode = value;
+    public virtual void Setup(Item item)
+    {
+        ID = item.ID;
+        NameItem = item.Name;
+        PriceItem = item.Value;
+
+        DayItem = item.Day;
+        MonthItem = item.Month;
+        YearItem = item.Year;
+
+        InstallmentItem = item.AmountParceled;
+        ShowTotalItem = item.ShowTotal;
+
+        NameInput.text = NameItem;
+        PriceInput.text = PriceItem.ToMoney();
+        DateInput.text = new DateTime(YearItem, MonthItem, DayItem).ToString("dd/MM/yyyy");
+    }
     protected abstract bool IsMissingInformation();
-    public abstract void Setup<T>(T item);
 
+    protected abstract void Confirm();
     protected virtual void LeaveScenario()
     {
+        NameInput.onEndEdit.RemoveAllListeners();
+        DateInput.onEndEdit.RemoveAllListeners();
+        PriceInput.onEndEdit.RemoveAllListeners();
+
+        EditMode = false;
         _addManager.LeaveCurrentScene();
     }
 
@@ -61,6 +135,7 @@ public abstract class BaseCreationUi : MonoBehaviour
         if (scenario == null) return;
 
         InitializeInputs();
+        ResetInputs();
         scenario.FadeIn(time);
     }
     public void FadeOut(float time)

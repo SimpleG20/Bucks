@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using UnityEngine;
@@ -40,62 +38,59 @@ public class AddManager : MonoBehaviour
 
     private void InitializeButtons()
     {
-        _boxSceneBt.onClick.AddListener(() => LoadOtherScenario(AddScenes.Box));
-        _wishSceneBt.onClick.AddListener(() => LoadOtherScenario(AddScenes.Wish));
-        _expenseSceneBt.onClick.AddListener(() => LoadOtherScenario(AddScenes.Expense));
-        _additionalSceneBt.onClick.AddListener(() => LoadOtherScenario(AddScenes.Additional));
+        _boxSceneBt.onClick.AddListener(() => LoadSubScenario(AddScenes.Box));
+        _wishSceneBt.onClick.AddListener(() => LoadSubScenario(AddScenes.Wish));
+        _expenseSceneBt.onClick.AddListener(() => LoadSubScenario(AddScenes.Expense));
+        _additionalSceneBt.onClick.AddListener(() => LoadSubScenario(AddScenes.Additional));
     }
 
-    public async void EditItem(Item item)
+    public void EditItem(Item item)
     {
         if (!PagesManager.Instance.IsInPage(PagesManager.Pages.Add))
         {
-            await Task.Run(() => PagesManager.Instance.AddScene());
+            PagesManager.Instance.GoToAddScene();
         }
 
         int scenario = (int)item.ItemType + 1;
 
-        await SetupItem(item);
-
-        LoadOtherScenario((AddScenes)scenario);
+        LoadSubScenario((AddScenes)scenario);
+        SetupItem(item);
     }
 
     public async void EditBox(MoneyBox box)
     {
         if (!PagesManager.Instance.IsInPage(PagesManager.Pages.Add))
         {
-            await Task.Run(() => PagesManager.Instance.AddScene());
+            await Task.Run(() => PagesManager.Instance.GoToAddScene());
         }
 
         _boxScenario.FadeIn(0.75f);
     }
 
-    private async Task SetupItem(Item item)
+    private void SetupItem(Item item)
     {
         switch (item.ItemType)
         {
             case Item.TypeItem.Additional:
-                Additional additional = item as Additional;
-                _additionalScenario.Setup(additional);
+                _additionalScenario.InEditMode(true);
+                _additionalScenario.Setup(item);
                 break;
             case Item.TypeItem.Box:
-                MoneyBox box = item as MoneyBox;
-                _boxScenario.Setup(box);
+                _boxScenario.InEditMode(true);
+                _boxScenario.Setup(item);
                 break;
             case Item.TypeItem.Expense:
-                Expense expense = item as Expense;
-                _expenseScenario.Setup(expense);
+                _expenseScenario.InEditMode(true);
+                _expenseScenario.Setup(item);
                 break;
             case Item.TypeItem.Wish:
-                Wish wish = item as Wish;
-                _wishScenario.Setup(wish);
+                _wishScenario.InEditMode(true);
+                _wishScenario.Setup(item);
                 break;
         }
-
-        await Task.Yield();
     }
 
-    private void LoadOtherScenario(AddScenes type)
+    private void LoadSubScenario(AddScenes type)
     {
         if (type == AddScenes.None)
         {
@@ -109,18 +104,22 @@ public class AddManager : MonoBehaviour
             case AddScenes.Additional:
                 _additionalScenario.FadeIn(0.75f);
                 _currentScene = AddScenes.Additional;
+                _titleTx.text = "Novo extra";
                 break;
             case AddScenes.Expense:
                 _expenseScenario.FadeIn(0.75f);
                 _currentScene = AddScenes.Expense;
+                _titleTx.text = "Nova despesa";
                 break;
             case AddScenes.Wish:
                 _wishScenario.FadeIn(0.75f);
                 _currentScene = AddScenes.Wish;
+                _titleTx.text = "Novo desejo";
                 break;
             case AddScenes.Box:
                 _boxScenario.FadeIn(0.75f);
                 _currentScene = AddScenes.Box;
+                _titleTx.text = "Nova caixinha";
                 break;
         }
 
@@ -148,6 +147,6 @@ public class AddManager : MonoBehaviour
         _optionsScenario.FadeIn();
         _titleTx.text = "Escolha o que deseja";
 
-        User.Instance.SaveChange();
+        if (!User.Instance.Test) User.Instance.SaveChange();
     }
 }

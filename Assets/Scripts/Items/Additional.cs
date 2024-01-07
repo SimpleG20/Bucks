@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 [Serializable]
 public class Additional : Item
 {
+    public Guid ID { get; private set; }
     [field: SerializeField] public string Name { get; private set; }
     [field: SerializeField] public float Value { get; private set; }
     [field: SerializeField] public int AmountParceled { get; private set; }
@@ -26,6 +28,17 @@ public class Additional : Item
         Year = year;
         ShowTotal = showTotal;
 
+        InitializeManually();
+    }
+
+    public void SetID(Guid id) => ID = id;
+    public void InitializeManually()
+    {
+        ID = Guid.NewGuid();
+
+        int amountParceled = AmountParceled;
+        int month = Month;
+        int year = Year;
         int yearsAmount = Mathf.CeilToInt(amountParceled / 12);
         TimeSpams = new ItemTimeSpam[yearsAmount];
 
@@ -42,4 +55,5 @@ public class Additional : Item
             month = 1;
         }
     }
+
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,7 @@ public interface Item
 {
     public enum TypeItem { Additional, Box, Expense, Wish }
 
+    public Guid ID { get; }
     public string Name { get; }
     public float Value { get; }
     public int AmountParceled { get; }
@@ -17,8 +19,13 @@ public interface Item
 
     public ItemTimeSpam[] TimeSpams { get; }
 
+    public void SetID(Guid id);
+
+    public void InitializeManually();
+
 }
 
+[Serializable]
 public struct ItemTimeSpam
 {
     public int Year { get; private set; }

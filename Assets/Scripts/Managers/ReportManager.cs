@@ -1,8 +1,9 @@
 using System;
-using System.Collections;
+using System.Globalization;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine;
+using TMPro;
 
 public class ReportManager : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class ReportManager : MonoBehaviour
     [SerializeField] private CanvasGroup _detailsWindow;
 
     [SerializeField] private Transform _reportItemsParent;
+
+    [SerializeField] private TMP_Text _monthTx;
 
     private int _reportItemsCount;
     private int _currentPage = 0;
@@ -28,11 +31,15 @@ public class ReportManager : MonoBehaviour
         _currentMonth = DateTime.Now.Month;
         _currentYear = DateTime.Now.Year;
 
-        ResetReportItems();
+        _nextMonthBt.onClick.AddListener(NextMonth);
+        _prevMonthBt.onClick.AddListener(PrevMonth);
+
+        InitializeReportSecenario();
     }
 
     public void InitializeReportSecenario()
     {
+        UpdateMonthTx();
         ResetReportItems();
         GetItems();
     }
@@ -121,6 +128,8 @@ public class ReportManager : MonoBehaviour
             advancedYear = true;
         }
 
+        UpdateMonthTx();
+
         int none = 0;
 
         for(int i = 0; i < itemList.Count; i++)
@@ -161,6 +170,8 @@ public class ReportManager : MonoBehaviour
             _currentYear--;
         }
 
+        UpdateMonthTx();
+
         for (int i = 0; i < itemList.Count; i++)
         {
             var random = itemList.PickRandom();
@@ -172,5 +183,14 @@ public class ReportManager : MonoBehaviour
         }
 
         _currentPage--;
+    }
+
+    private void UpdateMonthTx()
+    {
+        var date = new DateTime(_currentYear, _currentMonth, 1);
+        string text = $"{date.ToString("MMMM", CultureInfo.CurrentCulture)} - {date.Year}";
+        text = text[0].ToString().ToUpper() + text.Substring(1);
+        _monthTx.text = text;
+        
     }
 }

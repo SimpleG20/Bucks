@@ -1,17 +1,19 @@
-using System.Globalization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class User: MonoBehaviour
 {
     public static User Instance { get; private set; }
 
+    [field: SerializeField] public bool Test { get; private set; }
 
-    [field: SerializeField] public float AvailableMoney { get; private set; }
+    [field: Space(10),SerializeField] public float AvailableMoney { get; private set; }
     [field: SerializeField] public float MonthlyIncome { get; private set; }
     [field: SerializeField] public float LimitCreditCard { get; private set; }
     [field: SerializeField] public int LastDay { get; private set; }
+
 
     [field: SerializeField] public bool AutoSave { get; private set; }
 
@@ -34,6 +36,16 @@ public class User: MonoBehaviour
 
     private async Task GetDataFromDatabase()
     {
+        if (Test)
+        {
+            foreach (Additional additional in AdditionalList) additional.InitializeManually();
+            foreach (Expense expense in ExpenseList) expense.InitializeManually();
+            foreach (MoneyBox box in BoxesList) box.InitializeManually();
+            foreach (Wish wish in WishList) wish.InitializeManually();
+
+            return;
+        }
+
         UserDataRaw data = DataHolder.LoadData();
 
         ExpenseList = new List<Expense>();
@@ -104,7 +116,7 @@ public class User: MonoBehaviour
     {
         if (AutoSave) return false;
 
-        SaveData().GetAwaiter().GetResult();
+        DataHolder.SaveData();
 
         return true;
     }
@@ -119,10 +131,48 @@ public class User: MonoBehaviour
     public void AddItemInExpenses(Expense expense) => ExpenseList.Add(expense);
     public void AddItemInAdditionals(Additional additional) => AdditionalList.Add(additional);
 
-    private async Task SaveData()
+    public void RemoveBoxByID(Guid id)
     {
-        DataHolder.SaveData();
-
-        await Task.Yield();
+        for (int i = 0; i < BoxesList.Count; i++)
+        {
+            if (BoxesList[i].ID == id)
+            {
+                BoxesList.RemoveAt(i);
+                return;
+            }
+        }
+    }
+    public void RemoveWishByID(Guid id)
+    {
+        for (int i = 0; i < WishList.Count; i++)
+        {
+            if (WishList[i].ID == id)
+            {
+                WishList.RemoveAt(i);
+                return;
+            }
+        }
+    }
+    public void RemoveExpenseByID(Guid id)
+    {
+        for(int i = 0; i < ExpenseList.Count; i++)
+        {
+            if (ExpenseList[i].ID == id)
+            {
+                ExpenseList.RemoveAt(i);
+                return;
+            }
+        }
+    }
+    public void RemoveAdditionalByID(Guid id)
+    {
+        for (int i = 0; i < AdditionalList.Count; i++)
+        {
+            if (AdditionalList[i].ID == id)
+            {
+                AdditionalList.RemoveAt(i);
+                return;
+            }
+        }
     }
 }

@@ -49,7 +49,7 @@ public class MainPageManager : MonoBehaviour
         _incomeInput.text = User.Instance.MonthlyIncome.ToMoney();
         _lastDayInput.text = User.Instance.LastDay.ToString("00");
 
-        _boxes.InitializeBoxes();
+        _boxes.UpdateBoxes();
     }
 
     public void SaveChanges()

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
@@ -11,6 +12,10 @@ public class SearchManager : MonoBehaviour
     [SerializeField] private Transform _searchItemsParent;
     [SerializeField] private SearchItemPrefab _searchItemPrefab;
 
+    [SerializeField] private SearchItemPrefab[] _searchItemsPreloaded;
+
+    private Queue<SearchItemPrefab> _searchItemsPreloadedQueue;
+
     private void Awake()
     {
         MainPageManager.onUserReady += HandleStart;
@@ -22,7 +27,7 @@ public class SearchManager : MonoBehaviour
 
         _mainPageSearchInput.onClick.AddListener(() =>
         {
-            PagesManager.Instance.SearchScene();
+            PagesManager.Instance.GoToSearchScene();
 
             _searchInput.interactable = true;
             _searchInput.Select();
@@ -30,33 +35,88 @@ public class SearchManager : MonoBehaviour
 
         _searchInput.onEndEdit.AddListener((value) =>
         {
+            if (value == null) return;
             SearchFor(value);
         });
     }
 
     private void SearchFor(string searchText)
     {
-        var newItem = Instantiate(_searchItemPrefab, _searchItemsParent);
+        CleanSearch();
 
-        Expense expenseItem = User.Instance.ExpenseList.First(t => t.Name.ToLower().Contains(searchText.ToLower()));
-        if (expenseItem == null)
+        StartQueue();
+        int maxPreloaded = _searchItemsPreloadedQueue.Count;
+
+        var expenseItems = User.Instance.ExpenseList.Where(t => t.Name.ToLower().Contains(searchText.ToLower())).ToArray();
+        var additionalItems = User.Instance.AdditionalList.Where(t => t.Name.ToLower().Contains(searchText.ToLower())).ToArray();
+        var wishItems = User.Instance.WishList.Where(t => t.Name.ToLower().Contains(searchText.ToLower())).ToArray();
+
+        foreach (var item in expenseItems)
         {
-            Additional additionalItem = User.Instance.AdditionalList.First(t => t.Name.ToLower() == searchText.ToLower());
-            if (additionalItem == null)
+            SearchItemPrefab prefab;
+            if (maxPreloaded > 0)
             {
-                Wish wishItem = User.Instance.WishList.First(t => t.Name.ToLower() == searchText.ToLower());
-                if (wishItem == null)
-                {
-                    Destroy(newItem.gameObject);
-                    return;
-                }
-
-                newItem.Initialize(wishItem);
-                return;
+                prefab = _searchItemsPreloadedQueue.Dequeue();
+                prefab.gameObject.SetActive(true);
+                maxPreloaded--;
             }
-            newItem.Initialize(additionalItem);
-            return;
+            else prefab = Instantiate(_searchItemPrefab, _searchItemsParent);
+
+            prefab.Initialize(item);
         }
-        newItem.Initialize(expenseItem);
+
+        foreach (var item in additionalItems)
+        {
+            SearchItemPrefab prefab;
+            if (maxPreloaded > 0)
+            {
+                prefab = _searchItemsPreloadedQueue.Dequeue();
+                prefab.gameObject.SetActive(true);
+                maxPreloaded--;
+            }
+            else prefab = Instantiate(_searchItemPrefab, _searchItemsParent);
+
+            prefab.Initialize(item);
+        }
+
+        foreach (var item in wishItems)
+        {
+            SearchItemPrefab prefab;
+            if (maxPreloaded > 0)
+            {
+                prefab = _searchItemsPreloadedQueue.Dequeue();
+                prefab.gameObject.SetActive(true);
+                maxPreloaded--;
+            }
+            else prefab = Instantiate(_searchItemPrefab, _searchItemsParent);
+
+            prefab.Initialize(item);
+        }
+    }
+
+    private void StartQueue()
+    {
+        _searchItemsPreloadedQueue = new Queue<SearchItemPrefab>();
+
+        foreach(SearchItemPrefab item in _searchItemsPreloaded)
+        {
+            _searchItemsPreloadedQueue.Enqueue(item);
+            item.gameObject.SetActive(false);
+        }
+    }
+
+    private void CleanSearch()
+    {
+        foreach(Transform child in _searchItemsParent)
+        {
+            if (_searchItemsPreloaded.Contains(child.GetComponent<SearchItemPrefab>()))
+            {
+                child.gameObject.SetActive(false);
+            }
+            else
+            {
+                Destroy(child.gameObject);
+            }
+        }
     }
 }

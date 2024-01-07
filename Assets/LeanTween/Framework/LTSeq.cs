@@ -92,7 +92,7 @@ public class LTSeq {
 	}
 
 	/**
-	* AddScene a time delay to the sequence
+	* GoToAddScene a time delay to the sequence
 	* @method append (delay)
 	* @param {float} delay:float amount of time to add to the sequence
 	* @return {LTSeq} LTDescr an object that distinguishes the tween
@@ -107,7 +107,7 @@ public class LTSeq {
 	}
 
 	/**
-	* AddScene a time delay to the sequence
+	* GoToAddScene a time delay to the sequence
 	* @method append (method)
 	* @param {System.Action} callback:System.Action method you want to be called
 	* @return {LTSeq} LTSeq an object that you can add tweens, methods and time on to
@@ -128,7 +128,7 @@ public class LTSeq {
 	}
 
 	/**
-	* AddScene a time delay to the sequence
+	* GoToAddScene a time delay to the sequence
 	* @method add (method(object))
 	* @param {System.Action} callback:System.Action method you want to be called
 	* @return {LTSeq} LTSeq an object that you can add tweens, methods and time on to

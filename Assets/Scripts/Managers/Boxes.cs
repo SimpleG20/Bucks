@@ -9,26 +9,16 @@ public class Boxes : MonoBehaviour
 
     private List<MoneyBox> _boxes;
 
-    public void InitializeBoxes()
+    public void UpdateBoxes()
     {
-        if (_boxes == null)
-        {
-            _boxes = new List<MoneyBox>();
-            return;
-        }
+        _boxes = User.Instance.BoxesList;
+
+        _boxesParent.DeleteChildren();
 
         foreach (var box in _boxes)
         {
             var newBox = Instantiate(_moneyBoxPrefab, _boxesParent);
             newBox.InitializeVisualization(box);
         }
-    }
-
-   public void AddNewBox(MoneyBox box)
-    {
-        _boxes.Add(box);
-
-        var newBox = Instantiate(_moneyBoxPrefab, _boxesParent);
-        newBox.InitializeVisualization(box);
     }
 }
