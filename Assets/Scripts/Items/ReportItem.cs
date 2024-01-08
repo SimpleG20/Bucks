@@ -25,5 +25,7 @@ public class ReportItem : MonoBehaviour
         _valueTx.text = value;
         if (debt) _imageSource.color = _debtColor;
         else _imageSource.color = _extraColor;
+
+        gameObject.SetActive(true);
     }
 }

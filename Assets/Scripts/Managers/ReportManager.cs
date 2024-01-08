@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
+using static UnityEditor.Progress;
 
 public class ReportManager : MonoBehaviour
 {
@@ -22,15 +23,13 @@ public class ReportManager : MonoBehaviour
     private int _currentPage = 0;
     private int _currentMonth = 1;
     private int _currentYear = 2023;
+    private int _maxPages;
 
-    private List<Item> itemList = new List<Item>();
-
+    private List<Item> itemListMonthly = new List<Item>();
+    private List<Item> itemListGeneral = new List<Item>();
 
     private void Start()
     {
-        _currentMonth = DateTime.Now.Month;
-        _currentYear = DateTime.Now.Year;
-
         _nextMonthBt.onClick.AddListener(NextMonth);
         _prevMonthBt.onClick.AddListener(PrevMonth);
 
@@ -39,34 +38,65 @@ public class ReportManager : MonoBehaviour
 
     public void InitializeReportSecenario()
     {
+        foreach (var item in User.Instance.ExpenseList) itemListGeneral.Add(item);
+        foreach (var item in User.Instance.AdditionalList) itemListGeneral.Add(item);
+
+        _currentMonth = DateTime.Now.Month;
+        _currentYear = DateTime.Now.Year;
+        
+        _currentPage = 0;
+
         UpdateMonthTx();
-        ResetReportItems();
+        UpdateMonthButtons();
+        
         GetItems();
+        GetMaxPagesCountPossible();
+
+        ResetReportItems();
+    }
+
+    private void GetMaxPagesCountPossible()
+    {
+        int maxMonth = DateTime.Now.Month;
+        int maxYear = DateTime.Now.Year;
+
+        foreach (Item item in itemListGeneral)
+        {
+            var years = item.TimeSpams;
+            var yearsCount = years.Length - 1;
+            var lastYear = years[yearsCount];
+            var monthsCount = lastYear.Months.Count - 1;
+            var lastMonth = lastYear.Months[monthsCount];
+
+            if (years[yearsCount].Year > maxYear) maxMonth = lastMonth;
+            else
+            {
+                if (lastMonth > maxMonth) maxMonth = lastMonth;
+            }
+        }
+
+        if (_currentYear == maxYear)
+        {
+            _maxPages = maxMonth - _currentMonth;
+            return;
+        }
+
+        _maxPages = 12 * (maxYear - _currentYear) + (maxMonth - _currentMonth);
     }
 
     private void GetItems()
     {
-        foreach(var item in User.Instance.ExpenseList)
+        foreach(Item item in itemListGeneral)
         {
-            itemList.Add(item);
-        }
-        foreach(var item in User.Instance.AdditionalList)
-        {
-            itemList.Add(item);
-        }
-
-        for(int i = 0; i < itemList.Count; i++)
-        {
-            var random = itemList.PickRandom();
-
-            if (CheckItemAccordingDate(random))
+            if (CheckItemAccordingDate(item))
             {
-                AddItem(random.Name, random.Value, random.ItemType == Item.TypeItem.Expense);
+                AddItemPrefab(item.Name, item.Value, item.ItemType == Item.TypeItem.Expense);
+                itemListMonthly.Add(item);
             }
         }
     }
 
-    public void AddItem(string name, float value, bool debt)
+    private void AddItemPrefab(string name, float value, bool debt)
     {
         if (_reportItemsCount == _reportItemAvailables.Count)
         {
@@ -96,7 +126,7 @@ public class ReportManager : MonoBehaviour
         return false;
     }
 
-    public void ResetReportItems()
+    private void ResetReportItems()
     {
         _reportItemsCount = 0;
 
@@ -118,45 +148,22 @@ public class ReportManager : MonoBehaviour
 
     private void NextMonth()
     {
-        bool advancedYear = false;
+        if (_currentPage == _maxPages) return;
 
         _currentMonth++;
         if (_currentMonth == 13)
         {
             _currentMonth = 1;
             _currentYear++;
-            advancedYear = true;
         }
 
         UpdateMonthTx();
+        ResetReportItems();
 
-        int none = 0;
-
-        for(int i = 0; i < itemList.Count; i++)
-        {
-            var random = itemList.PickRandom();
-
-            if (CheckItemAccordingDate(random))
-            {
-                AddItem(random.Name, random.Value, random.ItemType == Item.TypeItem.Expense);
-            }
-            else none++;
-        }
-
-        if (none == itemList.Count)
-        {
-            _nextMonthBt.gameObject.SetActive(false);
-
-            if (advancedYear)
-            {
-                _currentYear--;
-                _currentMonth = 12;
-            }
-            else _currentMonth--;
-            return;
-        }
+        GetItems();
 
         _currentPage++;
+        UpdateMonthButtons();
     }
 
     private void PrevMonth()
@@ -171,18 +178,12 @@ public class ReportManager : MonoBehaviour
         }
 
         UpdateMonthTx();
+        ResetReportItems();
 
-        for (int i = 0; i < itemList.Count; i++)
-        {
-            var random = itemList.PickRandom();
-
-            if (CheckItemAccordingDate(random))
-            {
-                AddItem(random.Name, random.Value, random.ItemType == Item.TypeItem.Expense);
-            }
-        }
+        GetItems();
 
         _currentPage--;
+        UpdateMonthButtons();
     }
 
     private void UpdateMonthTx()
@@ -191,6 +192,24 @@ public class ReportManager : MonoBehaviour
         string text = $"{date.ToString("MMMM", CultureInfo.CurrentCulture)} - {date.Year}";
         text = text[0].ToString().ToUpper() + text.Substring(1);
         _monthTx.text = text;
-        
+    }
+
+    private void UpdateMonthButtons()
+    {
+        if (_currentPage == 0)
+        {
+            _nextMonthBt.gameObject.SetActive(true);
+            _prevMonthBt.gameObject.SetActive(false);
+        }
+        else if (_currentPage > 0 && _currentPage < _maxPages)
+        {
+            _nextMonthBt.gameObject.SetActive(true);
+            _prevMonthBt.gameObject.SetActive(true);
+        }
+        else
+        {
+            _nextMonthBt.gameObject.SetActive(false);
+            _prevMonthBt.gameObject.SetActive(true);
+        }
     }
 }

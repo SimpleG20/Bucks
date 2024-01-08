@@ -28,8 +28,8 @@ public interface Item
 [Serializable]
 public struct ItemTimeSpam
 {
-    public int Year { get; private set; }
-    public List<int> Months { get; private set; }
+    [field: SerializeField] public int Year { get; private set; }
+    [field: SerializeField] public List<int> Months { get; private set; }
 
     public ItemTimeSpam(int year, List<int> months)
     {

@@ -17,7 +17,7 @@ public class Expense : Item
     [field: SerializeField] public bool Credited { get; private set; }
     public Item.TypeItem ItemType => Item.TypeItem.Expense;
 
-    public ItemTimeSpam[] TimeSpams { get; private set; }
+    [field: SerializeField] public ItemTimeSpam[] TimeSpams { get; private set; }
 
     public Expense(string name, float value, int amountParceled, int day, int month, int year, bool showTotal, bool subscription, bool credited)
     {
@@ -42,13 +42,13 @@ public class Expense : Item
         int amountParceled = AmountParceled;
         int month = Month;
         int year = Year;
-        int yearsAmount = Mathf.CeilToInt(amountParceled / 12);
+        int yearsAmount = Mathf.CeilToInt((month + amountParceled) / 12) + 1;
         TimeSpams = new ItemTimeSpam[yearsAmount];
 
         for (int i = 0; i < yearsAmount; i++)
         {
             var listMonths = new List<int>();
-            while (month < 13 || amountParceled != 0)
+            while (month < 13 && amountParceled > 0)
             {
                 listMonths.Add(month);
                 amountParceled--;

@@ -40,40 +40,20 @@ public class MoneyBox : Item
         int month = DateTime.Now.Month;
         int year = DateTime.Now.Year;
 
-        if (amountMonths == 0)
-        {
-            int yearsAmount = 3;
-            TimeSpams = new ItemTimeSpam[yearsAmount];
+        int yearsAmount = Mathf.CeilToInt((month + amountMonths) / 12) + 1;
+        TimeSpams = new ItemTimeSpam[yearsAmount];
 
-            for (int i = 0; i < yearsAmount; i++)
-            {
-                var listMonths = new List<int>();
-                while (month < 13)
-                {
-                    listMonths.Add(month);
-                    month++;
-                }
-                TimeSpams[i] = new ItemTimeSpam(year + i, listMonths);
-                month = 1;
-            }
-        }
-        else
+        for (int i = 0; i < yearsAmount; i++)
         {
-            int yearsAmount = Mathf.CeilToInt(amountMonths / 12);
-            TimeSpams = new ItemTimeSpam[yearsAmount];
-
-            for (int i = 0; i < yearsAmount; i++)
+            var listMonths = new List<int>();
+            while (month < 13 && amountMonths > 0)
             {
-                var listMonths = new List<int>();
-                while (month < 13 || amountMonths != 0)
-                {
-                    listMonths.Add(month);
-                    amountMonths--;
-                    month++;
-                }
-                TimeSpams[i] = new ItemTimeSpam(year + i, listMonths);
-                month = 1;
+                listMonths.Add(month);
+                amountMonths--;
+                month++;
             }
+            TimeSpams[i] = new ItemTimeSpam(year + i, listMonths);
+            month = 1;
         }
     }
 }
